@@ -19,6 +19,7 @@ def update_price(data):
 
     query = supabase.table("prices").update({
         "price": float(data["price"]),
+        "price_updated": True,
         "updated_at": datetime.utcnow().isoformat()
     }).eq("barcode", data["barcode"])
 

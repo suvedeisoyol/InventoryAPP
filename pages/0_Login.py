@@ -15,7 +15,7 @@ email = st.text_input("Email")
 password = st.text_input("Password", type="password")
 
 if st.button("Login"):
-    user = login(email, password)
+    user = login(email.lower(), password)
     if user:
         st.success("Logged in successfully")
         st.rerun()

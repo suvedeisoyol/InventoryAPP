@@ -78,3 +78,22 @@ def product_finder(dictionary: dict) -> list:
     result = query.execute()
 
     return result.data if result.data else []
+
+def price_finder(dictionary: dict) -> list:
+    """
+    Finds prices based on provided filters.
+
+    Parameters:
+        dictionary (dict): A dictionary of column-value pairs to filter by.
+
+    Returns:
+        list: List of matching prices.
+    """
+    query = supabase.table("prices").select("*")
+
+    for key, value in dictionary.items():
+        query = query.eq(key, value)
+
+    result = query.execute()
+
+    return result.data if result.data else []
