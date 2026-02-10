@@ -6,6 +6,7 @@ supabase = get_client()
 def fetch_price_view(filters: dict):
     payload = {
         "in_department": filters.get("department"),
+        "in_category": filters.get("category"),
         "in_brand": filters.get("brand"),
         "in_subbrand": filters.get("subbrand"),
         "in_product": filters.get("product"),

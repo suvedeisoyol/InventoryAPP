@@ -24,14 +24,24 @@ def price_update_form(user):
             st.write(f"**Current Price:** ${found_price['price']}") 
         
             price = st.number_input("New Price", step=0.01, format="%.2f", value = None, placeholder = "Enter price to update")
-            if st.button("Update Price"):
-                from backend.price_update import update_price
-                update_price({
-                    "barcode": barcode_to_check,
-                    "price": price,
-                    "updated_by": user["id"]
-                })
-                st.success(f"Price for barcode '{barcode_to_check}' updated successfully!")
-                st.write(f"Price inserted {price_finder({'barcode': barcode_to_check})[0]['price']}")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("Update Price"):
+                    from backend.price_update import update_price
+                    update_price({
+                        "barcode": barcode_to_check,
+                        "price": price,
+                        "updated_by": user["id"]
+                    })
+                    st.success(f"Price for barcode '{barcode_to_check}' updated successfully!")
+                    st.write(f"Price inserted {price_finder({'barcode': barcode_to_check})[0]['price']}")
+            with col2:
+                if st.button("Delete the Variant"):
+                    st.warning("Are you sure you want to delete this variant? This action cannot be undone.")
+                    if st.button("Confirm Deletion"):
+                        from backend.variants import delete_variant
+                        delete_variant(barcode_to_check)
+                        st.success(f"Variant with barcode '{barcode_to_check}' deleted successfully!")
         else:
             st.error("Please input the ITEM details below to add the variant.")

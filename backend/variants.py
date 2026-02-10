@@ -19,3 +19,6 @@ def get_variants_by_product(filters: dict | None = None):
 
     return query.execute().data
 
+def delete_variant(barcode):
+    return supabase.table("variants").delete().eq("barcode", barcode).execute()
+

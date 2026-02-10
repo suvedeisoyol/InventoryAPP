@@ -11,7 +11,10 @@ from utils.layout import page_header
 
 
 def add_variant_form(user):
-    page_header("🔍 SCAN THE BARCODE")
+
+    page_header("➕ Add Product Variant")
+
+    #page_header("🔍 SCAN THE BARCODE")
     barcode_to_check = st.text_input("ENTER the Barcode", placeholder="Enter barcode")
 
     if not validate_barcode(barcode_to_check):
@@ -30,7 +33,7 @@ def add_variant_form(user):
             st.success("Please input the ITEM details below to add the variant.")
 
 
-    page_header("➕ Add Product Variant")
+    
 
 
     departments = get_distinct_values("products", "department")
@@ -64,35 +67,42 @@ def add_variant_form(user):
     selected_label = st.selectbox("Select Product", list(product_labels.keys()))
     product_id = product_labels[selected_label]
 
+    
 
 
 
     variant_name = st.text_input("Variant Name", placeholder ="Enter product color/type")
-    #barcode = st.text_input("Barcode", placeholder="Enter barcode")
     barcode = barcode_to_check
-    price = st.number_input("Price", step=0.01, format="%.2f", value = None, placeholder = "Enter price")
 
+    st.write(f"Adding product variant for: **{selected_label}**")
+    col1, col2 = st.columns(2)
+    with col1:
+        price = st.number_input("Price", step=0.01, format="%.2f", value = None, placeholder = "Enter price")
 
-    if st.button("Add Product Variant"):
-        if not products:
-            st.error("No matching product found. Please add the product first.")
-        elif not validate_barcode(barcode):
-            st.error("Invalid barcode")
-        else:
+   
+    with col2:
+        st.write("")
+        st.write("")
+        if st.button("Add Product Variant"):
+            if not products:
+                st.error("No matching product found. Please add the product first.")
+            elif not validate_barcode(barcode):
+                st.error("Invalid barcode")
+            else:
 
-            add_variant({
-                "variant": variant_name.upper(),
-                "barcode": barcode,
-                "product_id": product_id,
-                "hq_price": price,
-                "created_by": user["id"]
-            })
+                add_variant({
+                    "variant": variant_name.upper(),
+                    "barcode": barcode,
+                    "product_id": product_id,
+                    "hq_price": price,
+                    "created_by": user["id"]
+                })
 
-            create_price({
-                "barcode": barcode,
-                "price": price,
-                "updated_by": user["id"]
-            })
+                create_price({
+                    "barcode": barcode,
+                    "price": price,
+                    "updated_by": user["id"]
+                })
 
-            st.success(f"Variant '{variant_name}' added successfully!")
-            return
+                st.success(f"Variant '{variant_name}' added successfully!")
+                return
