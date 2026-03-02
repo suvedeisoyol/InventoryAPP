@@ -1,7 +1,8 @@
+import streamlit as st
 from backend.products import get_products
 from utils.supabase_helpers import get_distinct_values, price_finder, product_finder, variant_finder
 from .client import get_client
-import streamlit as st
+
 
 
 supabase = get_client()

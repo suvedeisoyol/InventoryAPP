@@ -1,6 +1,9 @@
-from backend.backoffice import fetch_price_view, find_product_id, get_product_filters
-from backend.products import get_products
 import streamlit as st
+from backend.backoffice import fetch_price_view, find_product_id, get_product_filters
+
+#from backend.backoffice import 
+from backend.products import get_products
+
 import pandas as pd
 from utils.auth import current_user
 from backend.inventory import add_inventory_row, add_inventory_movement, add_inventory_movements, get_current_inventory, get_current_stocking
