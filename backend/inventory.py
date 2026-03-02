@@ -1,3 +1,4 @@
+from itertools import product
 import streamlit as st
 from backend.client import get_client
 
@@ -12,10 +13,11 @@ def add_inventory_row(barcode, product_label, quantity, variant_id):
 
 
 
-def add_inventory_movement(variant_id, quantity_change, updated_by):
+def add_inventory_movement(variant_id, quantity_change, updated_by, stocked=True):
     """
     Inserts a new inventory movement row into Supabase.
     quantity_change can be positive (add stock) or negative (remove stock).
+    stocked is a boolean that is False when the movement is not proceeded from basement to the shelf
     """
 
     from backend.client import get_client
@@ -24,5 +26,33 @@ def add_inventory_movement(variant_id, quantity_change, updated_by):
     return supabase.table("inventory_movements").insert({
         "variant_id": variant_id,
         "quantity_change": quantity_change,
-        "updated_by": updated_by
+        "updated_by": updated_by,
+        "stocked": stocked
     }).execute()
+
+def add_inventory_movements(movements: list):
+    """
+    Insert multiple inventory movement rows in one batch.
+    """
+    if not movements:
+        return
+
+    supabase.table("inventory_movements").insert(movements).execute()
+
+
+def get_current_inventory(filter):
+    data = supabase.rpc("get_current_inventories", {
+    "in_department": filter.get("department"),
+    "in_category": filter.get("category"),
+    "in_brand": filter.get("brand"),
+    "in_stocked": filter.get("stocked", True)  # Default to True if not provided
+    }).execute().data
+    return data or []   
+
+def get_current_stocking(filter):
+    data = supabase.rpc("get_current_stocking", {
+    "in_department": filter.get("department"),
+    "in_category": filter.get("category"),
+    "in_brand": filter.get("brand") 
+    }).execute().data
+    return data or []

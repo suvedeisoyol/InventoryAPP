@@ -1,3 +1,4 @@
+from backend.backoffice import product_look_barcode
 import streamlit as st
 from utils.layout import page_header
 from utils.supabase_helpers import variant_finder, barcode_checker, product_finder, price_finder
@@ -14,16 +15,13 @@ def price_update_form(user):
 
     else:
         if barcode_checker(barcode_to_check):
-            st.success("Product found! ready to update price.")
-            found_variant = variant_finder({"barcode": barcode_to_check})[0]
-            found_product = product_finder({"id": found_variant["product_id"]})[0]
-            found_price = price_finder({"barcode": barcode_to_check})[0]
-            st.write("#### Product Details")
-            st.write(f"**Product Name:**  {found_product['brand']} {found_product['product']}  {found_product['size']}")
-            st.write(f"**Color/Type:** {found_variant['variant']}")  
-            st.write(f"**Current Price:** ${found_price['price']}") 
-        
-            price = st.number_input("New Price", step=0.01, format="%.2f", value = None, placeholder = "Enter price to update")
+            product_found = product_look_barcode(barcode_to_check)
+            st.write("### Product Details")
+            st.write(f"**Product Name:**  {product_found['product_name']}     **Color/Type:** {product_found['variant']}     **Current Price:** ${product_found['current_price']}") 
+            if product_found:
+                st.success("Product found! ready to update price.")
+
+            price = st.number_input("New Price", step=.50, format="%.2f", value = product_found['current_price'], placeholder = "Enter price to update")
 
             col1, col2 = st.columns(2)
             with col1:

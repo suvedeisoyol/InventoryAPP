@@ -47,3 +47,5 @@ def fetch_products_with_variants(
 
     return response.data
 
+
+

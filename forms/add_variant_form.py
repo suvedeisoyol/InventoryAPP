@@ -1,3 +1,4 @@
+from backend.backoffice import get_product_filters
 import streamlit as st
 from backend.variants import add_variant
 from backend.products import get_products
@@ -36,28 +37,8 @@ def add_variant_form(user):
     
 
 
-    departments = get_distinct_values("products", "department")
-    department = st.selectbox("Department", departments)
 
-    categories = get_distinct_values("products", "category", filters={"department": department})
-    category = st.selectbox("Select Category", categories)
-    brands = get_distinct_values("products", "brand", filters={"department": department, "category": category})
-    brand = st.selectbox("Select Brand", brands)
-    subbrands = get_distinct_values("products", "subbrand", filters={"department": department, "category": category, "brand": brand})
-    subbrand = st.selectbox("Select Subbrand", subbrands)
-    size = st.selectbox("Select Size", get_distinct_values("products", "size", filters={"department": department, "category": category, "brand": brand, "subbrand": subbrand}))
-
-
-    filter = {
-        "department": department,
-        "category": category,
-        "brand": brand,
-        "subbrand": subbrand,
-        #"product": product_name,
-        "size": size}
-
-
-
+    filter = get_product_filters()
     products = get_products(filters=filter)
     product_labels = {
     f"{p['product']} ({p['brand']} - {p['size']})": p["id"]

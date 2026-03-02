@@ -1,6 +1,7 @@
 from .client import get_client
 import uuid
 from datetime import datetime
+from utils.supabase_helpers import variant_finder
 
 supabase = get_client()
 
@@ -9,7 +10,7 @@ def add_variant(data):
     data["created_at"] = datetime.utcnow().isoformat()
     return supabase.table("variants").insert(data).execute()
 
-def get_variants_by_product(filters: dict | None = None):
+"""def get_variants_by_product(filters: dict | None = None):
 
     query = supabase.table("variants").select("*")
 
@@ -17,8 +18,9 @@ def get_variants_by_product(filters: dict | None = None):
         for column, value in filters.items():
             query = query.eq(column, value)
 
-    return query.execute().data
+    return query.execute().data"""
 
 def delete_variant(barcode):
     return supabase.table("variants").delete().eq("barcode", barcode).execute()
+
 
