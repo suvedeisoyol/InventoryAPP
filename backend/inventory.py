@@ -56,3 +56,8 @@ def get_current_stocking(filter):
     "in_brand": filter.get("brand") 
     }).execute().data
     return data or []
+
+def temp_changing_stock():
+    # This is a temporary function to change the stocking status of inventory movements for testing purposes.
+    supabase.table("inventory_movements").update({"stocked": True}).eq("stocked", False).execute()
+    return None

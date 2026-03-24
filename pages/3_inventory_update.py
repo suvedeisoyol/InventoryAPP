@@ -6,7 +6,7 @@ from backend.products import get_products
 
 import pandas as pd
 from utils.auth import current_user
-from backend.inventory import add_inventory_row, add_inventory_movement, add_inventory_movements, get_current_inventory, get_current_stocking
+from backend.inventory import add_inventory_row, add_inventory_movement, add_inventory_movements, get_current_inventory, get_current_stocking, temp_changing_stock
 from utils.dataframe_store import init_inventory_df
 from utils.supabase_helpers import get_distinct_values, variant_finder, product_finder
 
@@ -117,59 +117,92 @@ with inventory_tab:
     
 
 with stocking_tab:
-    col1, col2, col3 = st.columns(3)
-    departments= ["HAIR", "WIG", "CHEMICAL", "GENERAL"] 
-    with col1:
-        department = st.selectbox("Departments", [""] + departments)
-        department = department or None
+
+    tab_lists_stocking = ["Update Stocking", "Load Current Stocking"]
+    updating, refilling = st.tabs(tab_lists_stocking)
+
+    with updating:
+        col1, col2, col3 = st.columns(3)
+        departments= ["HAIR", "WIG", "CHEMICAL", "GENERAL"] 
+        with col1:
+            department = st.selectbox("Departments", [""] + departments)
+            department = department or None
+            
+            categories = get_distinct_values("products", "category", filters={"department": department})
+
+        with col2:
+            category = st.selectbox("Category", [""] + categories)
+            category = category or None
+
+            brands = get_distinct_values("products", "brand", filters={"department": department, "category": category})
+        with col3:
+            brand = st.selectbox("Select the Brand", [""] + brands )
+            brand = brand or None
         
-        categories = get_distinct_values("products", "category", filters={"department": department})
+        filters = {
+        "department": department,
+        "category": category,
+        "brand": brand,
+    }
+        inventory_data = get_current_inventory(filters)
+        inventory_data = pd.DataFrame(inventory_data)   
+        inventory_data["stocking"] = 0
 
-    with col2:
-        category = st.selectbox("Category", [""] + categories)
-        category = category or None
-
-        brands = get_distinct_values("products", "brand", filters={"department": department, "category": category})
-    with col3:
-        brand = st.selectbox("Select the Brand", [""] + brands )
-        brand = brand or None
-    
-    filters = {
-    "department": department,
-    "category": category,
-    "brand": brand,
-}
-    inventory_data = get_current_inventory(filters)
-    inventory_data = pd.DataFrame(inventory_data)   
-    inventory_data["Stocking"] = 0
-    inventory_data = st.data_editor(inventory_data)
+        inventory_data = st.data_editor(
+            inventory_data,
+            column_config={
+                "variant": st.column_config.TextColumn(disabled=True),
+                "barcode": st.column_config.TextColumn(disabled=True),
+                "current_stock": st.column_config.NumberColumn(disabled=True),
+                "stocking": st.column_config.NumberColumn(min_value=0, step=1)
+                },
+            column_order=["subbrand", "product", "size", "variant", "inventory", "stocking"],
+            hide_index=True
+        )
 
 
-    if st.button("Save Stocking Changes"):
-        st.write("Saving stocking changes...")
+        if st.button("Save Stocking Changes"):
+            st.write("Saving stocking changes...")
 
-        movements = [
-            {
-                "variant_id": row["variant_id"],
-                "quantity_change": -1 * row["Stocking"],
-                "updated_by": user["id"],
-                "stocked": False
-            }
-            for _, row in inventory_data.iterrows()
-            if pd.notna(row["Stocking"]) 
-                and isinstance(row["Stocking"], (int)) 
-                and row["Stocking"] != 0
-        ]
+            movements = [
+                {
+                    "variant_id": row["variant_id"],
+                    "quantity_change": -1 * row["stocking"],
+                    "updated_by": user["id"],
+                    "stocked": False
+                }
+                for _, row in inventory_data.iterrows()
+                if pd.notna(row["stocking"]) 
+                    and isinstance(row["stocking"], (int)) 
+                    and row["stocking"] != 0
+            ]
 
-        add_inventory_movements(movements)   # <-- clean call
+            add_inventory_movements(movements)   # <-- clean call
 
-        st.success("Stocking changes saved successfully!")
+            st.success("Stocking changes saved successfully!")
 
-    if st.button("Load Current Stocking"):
+    with refilling:
+        
         filters["stocked"] = False
         stocking_data = get_current_inventory(filters)
         stocking_data = pd.DataFrame(stocking_data)
-        st.dataframe(stocking_data)
+        stocking_data["check"] = False
+        edited_df = st.data_editor(stocking_data,
+                                column_config={
+                "variant": st.column_config.TextColumn(disabled=True),
+                "barcode": st.column_config.TextColumn(disabled=True),
+                "current_stock": st.column_config.NumberColumn(disabled=True),
+                "check": st.column_config.CheckboxColumn()
+            },
+            column_order=["subbrand", "product", "size", "variant", "inventory", "check"],
+            hide_index=True
+        )
+
+        if st.button("Mark as Stocked"):
+            st.write("Marking selected items as stocked...")
+            temp_changing_stock()  # This will set all items to stocked for testing purposes. Replace with actual logic to update only selected items.
+            st.success("Selected items marked as stocked successfully!")
+            
 
 
 
