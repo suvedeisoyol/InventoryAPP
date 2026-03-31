@@ -41,10 +41,11 @@ def add_inventory_movements(movements: list):
 
 
 def get_current_inventory(filter):
-    data = supabase.rpc("get_current_inventories", {
+    data = supabase.rpc("get_current_inventory", {
     "in_department": filter.get("department"),
     "in_category": filter.get("category"),
     "in_brand": filter.get("brand"),
+    "in_product": filter.get("product"),
     "in_stocked": filter.get("stocked", True)  # Default to True if not provided
     }).execute().data
     return data or []   

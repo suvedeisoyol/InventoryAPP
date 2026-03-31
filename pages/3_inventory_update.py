@@ -139,10 +139,15 @@ with stocking_tab:
             brand = st.selectbox("Select the Brand", [""] + brands )
             brand = brand or None
         
+        style = get_distinct_values("products", "product", filters={"department": department, "category": category, "brand": brand})
+        product = st.selectbox("Select the Product", [""] + style)
+        product = product or None
+
         filters = {
         "department": department,
         "category": category,
         "brand": brand,
+        "product": product
     }
         inventory_data = get_current_inventory(filters)
         inventory_data = pd.DataFrame(inventory_data)   
@@ -182,9 +187,8 @@ with stocking_tab:
             st.success("Stocking changes saved successfully!")
 
     with refilling:
-        
-        filters["stocked"] = False
-        stocking_data = get_current_inventory(filters)
+        refill_filters = {"stocked": False}
+        stocking_data = get_current_inventory(refill_filters)
         stocking_data = pd.DataFrame(stocking_data)
         stocking_data["check"] = False
         edited_df = st.data_editor(stocking_data,
